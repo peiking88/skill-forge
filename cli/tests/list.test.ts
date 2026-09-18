@@ -65,16 +65,16 @@ describe("list command", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const output = run(tmpDir);
     expect(output).toBe("");
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Malformed"),
-    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Malformed"));
     errorSpy.mockRestore();
   });
 
   it("prints formatted table for skills", () => {
     const skillsDir = path.join(tmpDir, ".claude", "skills");
     // Create skill directories so auto-prune keeps them
-    fs.mkdirSync(path.join(skillsDir, "generate-endpoint"), { recursive: true });
+    fs.mkdirSync(path.join(skillsDir, "generate-endpoint"), {
+      recursive: true,
+    });
     fs.mkdirSync(path.join(skillsDir, "seed-database"), { recursive: true });
     fs.writeFileSync(
       path.join(skillsDir, "skill_registry.json"),

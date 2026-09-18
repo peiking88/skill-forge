@@ -2,7 +2,19 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { resolveRoot, resolveTargetRoot, findProjectRoot, userHome, loadRegistry, GITHUB_REPO, EMBED_VERSION_FILE, EMBED_HOOKS_DIR, EMBED_COMMANDS, PLUGIN_NAME, embedCommandName } from "../src/types.js";
+import {
+  resolveRoot,
+  resolveTargetRoot,
+  findProjectRoot,
+  userHome,
+  loadRegistry,
+  GITHUB_REPO,
+  EMBED_VERSION_FILE,
+  EMBED_HOOKS_DIR,
+  EMBED_COMMANDS,
+  PLUGIN_NAME,
+  embedCommandName,
+} from "../src/types.js";
 
 describe("resolveRoot", () => {
   let tmpDir: string;
@@ -195,12 +207,18 @@ describe("resolveTargetRoot", () => {
 
   it("returns project scope when .git exists", () => {
     fs.mkdirSync(path.join(tmpDir, ".git"));
-    expect(resolveTargetRoot(tmpDir)).toEqual({ root: tmpDir, scope: "project" });
+    expect(resolveTargetRoot(tmpDir)).toEqual({
+      root: tmpDir,
+      scope: "project",
+    });
   });
 
   it("returns project scope when .claude exists", () => {
     fs.mkdirSync(path.join(tmpDir, ".claude"));
-    expect(resolveTargetRoot(tmpDir)).toEqual({ root: tmpDir, scope: "project" });
+    expect(resolveTargetRoot(tmpDir)).toEqual({
+      root: tmpDir,
+      scope: "project",
+    });
   });
 
   it("falls back to user scope when not a project dir", () => {
@@ -286,7 +304,9 @@ describe("loadRegistry auto-prune", () => {
     expect(result.registry.skills[0]!.name).toBe("alive-skill");
 
     // Verify file was rewritten
-    const onDisk = JSON.parse(fs.readFileSync(path.join(sd, "skill_registry.json"), "utf-8"));
+    const onDisk = JSON.parse(
+      fs.readFileSync(path.join(sd, "skill_registry.json"), "utf-8"),
+    );
     expect(onDisk.skills).toHaveLength(1);
   });
 
@@ -294,7 +314,10 @@ describe("loadRegistry auto-prune", () => {
     const sd = path.join(tmpDir, ".claude", "skills");
     fs.mkdirSync(path.join(sd, "my-skill"), { recursive: true });
     const regPath = path.join(sd, "skill_registry.json");
-    const content = JSON.stringify({ version: "1", skills: [{ name: "my-skill", version: "1.0.0" }] });
+    const content = JSON.stringify({
+      version: "1",
+      skills: [{ name: "my-skill", version: "1.0.0" }],
+    });
     fs.writeFileSync(regPath, content);
 
     loadRegistry(tmpDir);
@@ -330,7 +353,12 @@ describe("embed constants", () => {
   });
 
   it("exports embed command filenames", () => {
-    expect(EMBED_COMMANDS).toEqual(["scan.md", "create.md", "improve.md", "rename.md"]);
+    expect(EMBED_COMMANDS).toEqual([
+      "scan.md",
+      "create.md",
+      "improve.md",
+      "rename.md",
+    ]);
   });
 });
 

@@ -69,9 +69,11 @@ Discrete choices (yes/no, pick-N, approve/revise) → `AskUserQuestion`. Load vi
 ## Phase 0 — context loading (always runs first)
 
 Run the unified context loader (draft + catchup + skills list + registry):
+
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/phase0_load.py"
 ```
+
 Then note project conventions from CLAUDE.md.
 
 ---
@@ -79,6 +81,7 @@ Then note project conventions from CLAUDE.md.
 ## Mode dispatch
 
 Parse `$ARGUMENTS`:
+
 - Empty / no args → **auto mode**
 - `scan [prompt]` → **scan mode**
 - `create <prompt>` → **create mode** (required)
@@ -92,17 +95,21 @@ Goal: surface 3–5 high-value skill opportunities from the codebase.
 `$ARGUMENTS` is an optional free-form prompt used as focus hint (area, keyword, concern).
 
 ### Step 1: map structure
+
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/scan_structure.py"
 ```
+
 If a focus prompt is given, prioritize that area during pattern discovery.
 
 ### Step 2: discover patterns (2-scan rule)
+
 After every 2 file reads, append findings to `.skill-forge/insights.md`
 via `Write` (not shell heredoc — heredoc shifts each call, Bash allowlist can't
 match, non-bypass mode will prompt). Prevents loss if context fills up.
 
 Block format:
+
 ```
 ## Scan batch <timestamp>
 <pattern, files involved, why this could be a skill>
@@ -112,9 +119,11 @@ Also note: if multiple reads result in the same helper code appearing independen
 that's a strong signal to bundle a shared script rather than repeat it per-skill.
 
 ### Step 3: rank, present, and dispatch
+
 Rank by: frequency × cost of repetition × feasibility as a skill.
 
 Output format:
+
 ```
 1. <n>  [complexity: low|med|high]
    Why: <one sentence — what pain does this solve?>
@@ -140,10 +149,12 @@ Goal: draft a high-quality SKILL.md from a free-form prompt.
 from the prompt automatically (e.g. "translate i18n JSON files" → `translate-i18n`).
 
 ### Step 1: initialize draft + staging
+
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/init_draft.py" "<derived-name>" "<$ARGUMENTS>"
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/init_staging.py" "<derived-name>"
 ```
+
 The draft is the attention anchor the PreToolUse hook re-reads before
 every tool call. The staging dir (`.skill-forge/staging/<n>/`) is where
 the real skill files get assembled — we never Write directly into
@@ -151,6 +162,7 @@ the real skill files get assembled — we never Write directly into
 so fails the trust-boundary exemption, prompting even under YOLO.
 
 ### Step 2: gather context → insights.md (not the draft)
+
 Write grep/glob/read output to `.skill-forge/insights.md` first.
 Promote confirmed patterns to the draft only after review. This separation
 prevents codebase content from being injected into every subsequent tool call
@@ -196,13 +208,14 @@ scenarios, not single verbs. Three-clause structure:
 Fewer starting errors = fewer optimizer rounds to converge.
 
 **Instruction style: explain why, not MUST/NEVER.** Modern LLMs act more
-reliably when they understand the *reason* behind a constraint than when
+reliably when they understand the _reason_ behind a constraint than when
 they're handed a list of unexplained rules. Prefer "Write the config to
 `<path>` so the reloader watcher picks it up without a restart" over "MUST
 write to `<path>`". Rules divorced from their purpose break in edge cases
 the author didn't foresee; rules with a rationale generalize.
 
 ### Step 4: grade via independent subagent
+
 Spawn the `skill-grader` agent (the `Agent` tool with `subagent_type="skill-grader"`)
 and point it at the staged draft: `.skill-forge/staging/<n>/SKILL.md`.
 The grader returns JSON — parse `total` and `threshold_pass`.
@@ -211,10 +224,12 @@ scores because the main agent has sunk cost in the draft; a fresh grader
 context scores the text as written. Finalize only on `total ≥ 6`.
 
 ### Step 5: finalize (stage → real skill dir)
+
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/record_eval_score.py" <score>
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/finalize_skill.py" "<n>" --mode create
 ```
+
 `finalize_skill.py` runs entirely inside a subprocess — `shutil.copytree`
 moves the staged tree into `.claude/skills/<n>/` without going through
 Claude's tool permission layer, so no prompt fires even on a brand-new
@@ -233,9 +248,11 @@ or both, then fix accordingly.
 by matching against the registry (name, description, or intent). If ambiguous, ask.
 
 ### Step 1: initialize draft + staging
+
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/init_improve.py" "<matched-name>"
 ```
+
 `init_improve.py` does two things in one shot: copies the live skill dir
 (`.claude/skills/<n>/*`) into `.skill-forge/staging/<n>/`, and writes the
 SKILL.md into the active draft. Every Edit/Write below lands in staging —
@@ -245,12 +262,14 @@ copies the finished result back atomically in Step 4.
 ### Step 2: diagnose (content vs triggering vs both)
 
 **Content:**
+
 - Trigger drift (too vague / too narrow), stale steps, missing edge cases, redundant steps.
 - Bundling: 3 recent uses independently wrote the same helper? → move to `scripts/`.
 - Anti-overfitting: is the fix generalizable, or patching one instance? Prefer reframing over more constraints.
 - Version drift: assumptions still match current stack?
 
 **Triggering:**
+
 - Rarely auto-fires despite relevance? Uses complex multi-step scenarios? Pushy coverage? Has `Do NOT use when`?
 
 Classify → 3a (content), 3b (triggering), or both (3a first).
@@ -274,12 +293,14 @@ tree back, so new `scripts/` entries land in place automatically.
    dir is part of the staged skill, so it gets copied back to
    `.claude/skills/<n>/.opt/` by finalize and persists for future improve
    rounds (history, convergence flags):
+
    ```json
    [
-     {"query": "<realistic user message>", "should_trigger": true},
-     {"query": "<near-miss that should NOT trigger>", "should_trigger": false}
+     { "query": "<realistic user message>", "should_trigger": true },
+     { "query": "<near-miss that should NOT trigger>", "should_trigger": false }
    ]
    ```
+
    Query quality rules:
    - **Should-trigger (FN)**: vary phrasing; include understatement ("just add a route" when full endpoint setup needed); include adjacent-skill competition; use real codebase artifacts (paths, commands, frameworks).
    - **Should-not-trigger (FP)**: near-misses sharing keywords but different intent — simple single-step tasks in the same vocabulary (e.g., "read the deploy config" vs multi-step deploy). Avoid irrelevant queries ("what time is it") — they don't test the boundary.
@@ -288,12 +309,14 @@ tree back, so new `scripts/` entries land in place automatically.
    Ask user to review before running.
 
 2. Run optimization loop:
+
    ```bash
    python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/optimize_description.py" \
      --skill-path ".skill-forge/staging/<n>" \
      --eval-set ".skill-forge/staging/<n>/.opt/trigger_evals.json" \
      --max-iterations 5
    ```
+
    Safe to point at staging: `optimize_description.py` only reads
    SKILL.md for the current description and writes opt_state.json next to
    it. The actual `claude -p` eval subprocess writes a throwaway command
@@ -339,6 +362,7 @@ Fires after: 5+ tool calls, user correction mid-task, error recovery, or explici
 "remember this" / "save this workflow" / "make a skill" requests.
 
 ### Steps
+
 1. Summarize the workflow just completed in 2–3 sentences.
 2. Check registry — does an existing skill already cover this?
 3. If not covered, ask via `AskUserQuestion`: "Reusable pattern: <summary>. Create a skill?" — options `Create` / `Rename` / `Skip`.
@@ -351,9 +375,10 @@ Skip if: task < 3 tool calls, pure read-only, or simple single-file edit.
 ## Skill evaluator
 
 Scoring runs in the `skill-grader` subagent — fresh context, no sunk cost in
-the draft, calibrated scores. Main agent does *not* self-evaluate.
+the draft, calibrated scores. Main agent does _not_ self-evaluate.
 
 Invocation:
+
 ```
 Agent tool, subagent_type="skill-grader"
 prompt: "Grade draft at <absolute path>. Mode: create|improve.
@@ -384,14 +409,14 @@ Generalize from failures; don't patch the one failing case. A skill that passes
 
 ## File roles and trust levels
 
-| File | Trust | Re-read by hooks? | Purpose |
-|------|-------|-------------------|---------|
-| `.skill-forge/draft.md` | HIGH | YES (every tool call) | Active skill being written |
-| `.skill-forge/insights.md` | LOW | NO | Codebase scan staging |
-| `.claude/skills/skill_registry.json` | HIGH | NO (loaded on demand) | Version registry |
-| `.claude/skills/<n>/SKILL.md` | HIGH | NO | Final persisted skill |
-| `.claude/skills/<n>/CHANGELOG.md` | MED | NO | Evolution history |
-| `.claude/skills/<n>/scripts/` | HIGH | NO (run on demand) | Bundled helper scripts |
+| File                                 | Trust | Re-read by hooks?     | Purpose                    |
+| ------------------------------------ | ----- | --------------------- | -------------------------- |
+| `.skill-forge/draft.md`              | HIGH  | YES (every tool call) | Active skill being written |
+| `.skill-forge/insights.md`           | LOW   | NO                    | Codebase scan staging      |
+| `.claude/skills/skill_registry.json` | HIGH  | NO (loaded on demand) | Version registry           |
+| `.claude/skills/<n>/SKILL.md`        | HIGH  | NO                    | Final persisted skill      |
+| `.claude/skills/<n>/CHANGELOG.md`    | MED   | NO                    | Evolution history          |
+| `.claude/skills/<n>/scripts/`        | HIGH  | NO (run on demand)    | Bundled helper scripts     |
 
 ---
 

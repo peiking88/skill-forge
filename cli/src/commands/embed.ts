@@ -48,8 +48,10 @@ function isSkillForgeEntry(entry: any): boolean {
 /** Rewrite plugin paths for hooks.json entries (expanded by hook process). */
 export function rewriteHooksJsonPaths(text: string): string {
   return text
-    .split(PLUGIN_ROOT_HOOKS).join(EMBED_HOOKS_PATH_ENV)
-    .split(PLUGIN_ROOT_SKILLS).join(EMBED_SKILLS_PATH_ENV);
+    .split(PLUGIN_ROOT_HOOKS)
+    .join(EMBED_HOOKS_PATH_ENV)
+    .split(PLUGIN_ROOT_SKILLS)
+    .join(EMBED_SKILLS_PATH_ENV);
 }
 
 // ── rewriteContentPaths ──────────────────────────────────────────────────
@@ -57,8 +59,10 @@ export function rewriteHooksJsonPaths(text: string): string {
 /** Rewrite plugin paths for markdown bodies (run via Bash tool, CWD-based). */
 export function rewriteContentPaths(text: string): string {
   return text
-    .split(PLUGIN_ROOT_HOOKS).join(EMBED_HOOKS_PATH_REL)
-    .split(PLUGIN_ROOT_SKILLS).join(EMBED_SKILLS_PATH_REL);
+    .split(PLUGIN_ROOT_HOOKS)
+    .join(EMBED_HOOKS_PATH_REL)
+    .split(PLUGIN_ROOT_SKILLS)
+    .join(EMBED_SKILLS_PATH_REL);
 }
 
 // ── convertHooksForEmbed ─────────────────────────────────────────────────
@@ -160,7 +164,12 @@ export function removeEmbedFiles(projectRoot: string): void {
   }
 
   // Remove SF skills dir
-  const sfSkillsDir = path.join(projectRoot, ".claude", "skills", "skill-forge");
+  const sfSkillsDir = path.join(
+    projectRoot,
+    ".claude",
+    "skills",
+    "skill-forge",
+  );
   fs.rmSync(sfSkillsDir, { recursive: true, force: true });
 
   // Remove SF hooks dir
@@ -251,7 +260,9 @@ export function embedInstall(projectRoot: string, tag?: string): string {
     );
 
     // Find the downloaded tarball
-    const tarballs = fs.readdirSync(tmpDir).filter((f) => f.endsWith(".tar.gz"));
+    const tarballs = fs
+      .readdirSync(tmpDir)
+      .filter((f) => f.endsWith(".tar.gz"));
     if (tarballs.length === 0) {
       throw new Error("No tarball found after gh release download");
     }
@@ -284,7 +295,12 @@ export function embedInstall(projectRoot: string, tag?: string): string {
 
     // Copy skills/skill-forge/ → .claude/skills/skill-forge/
     const srcSkillsDir = path.join(extractRoot, "skills", "skill-forge");
-    const destSkillsDir = path.join(projectRoot, ".claude", "skills", "skill-forge");
+    const destSkillsDir = path.join(
+      projectRoot,
+      ".claude",
+      "skills",
+      "skill-forge",
+    );
     if (fs.existsSync(srcSkillsDir)) {
       copyDirRecursive(srcSkillsDir, destSkillsDir);
       // Rewrite SKILL.md inline script paths for embed mode. Use content-mode
@@ -323,7 +339,9 @@ export function embedInstall(projectRoot: string, tag?: string): string {
     const destHooksDir = path.join(projectRoot, EMBED_HOOKS_DIR);
     fs.mkdirSync(destHooksDir, { recursive: true });
     if (fs.existsSync(srcHooksDir)) {
-      for (const entry of fs.readdirSync(srcHooksDir, { withFileTypes: true })) {
+      for (const entry of fs.readdirSync(srcHooksDir, {
+        withFileTypes: true,
+      })) {
         if (!entry.isDirectory() && entry.name.endsWith(".py")) {
           fs.copyFileSync(
             path.join(srcHooksDir, entry.name),

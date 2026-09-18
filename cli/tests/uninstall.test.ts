@@ -88,9 +88,7 @@ describe("uninstall command", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => run("/proj")).toThrow("process.exit");
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Failed"),
-    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed"));
 
     exitSpy.mockRestore();
     errorSpy.mockRestore();
@@ -103,9 +101,7 @@ describe("uninstall command", () => {
 
     run("/tmp/random");
 
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("[user]"),
-    );
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("[user]"));
     logSpy.mockRestore();
   });
 });

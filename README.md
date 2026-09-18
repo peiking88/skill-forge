@@ -8,11 +8,11 @@ A Claude Code plugin that turns skill creation, discovery, iteration, and optimi
 
 Claude Code skills solve "how to codify workflows into reusable slash commands." But three gaps remain:
 
-| Gap | skill-forge's Answer |
-|-----|---------------------|
-| Don't know when to create a skill | Auto-detects complex tasks, proactively asks |
-| Don't know if a skill is well-written | Built-in 4-dimension evaluator, won't save below threshold |
-| Don't know if a skill will actually trigger | Dedicated description optimization phase, eval-driven |
+| Gap                                         | skill-forge's Answer                                       |
+| ------------------------------------------- | ---------------------------------------------------------- |
+| Don't know when to create a skill           | Auto-detects complex tasks, proactively asks               |
+| Don't know if a skill is well-written       | Built-in 4-dimension evaluator, won't save below threshold |
+| Don't know if a skill will actually trigger | Dedicated description optimization phase, eval-driven      |
 
 ## Install
 
@@ -34,11 +34,11 @@ Run `skill-forge doctor` to verify your environment.
 
 ## Commands
 
-| Command | What it does |
-|---------|-------------|
-| `/scan [prompt]` | Scan project for skill opportunities. Optional prompt as focus hint |
-| `/create <prompt>` | Create a new skill from prompt. Name auto-derived |
-| `/improve <prompt>` | Iterate existing skill from prompt. Target matched from registry |
+| Command               | What it does                                                             |
+| --------------------- | ------------------------------------------------------------------------ |
+| `/scan [prompt]`      | Scan project for skill opportunities. Optional prompt as focus hint      |
+| `/create <prompt>`    | Create a new skill from prompt. Name auto-derived                        |
+| `/improve <prompt>`   | Iterate existing skill from prompt. Target matched from registry         |
 | `/rename <old> <new>` | AI-driven skill rename — updates dir, SKILL.md body, workspace, registry |
 
 **Auto mode**: After complex tasks (5+ tool calls), the Stop hook detects the pattern and offers to create a skill — no manual invocation needed.
@@ -49,7 +49,7 @@ Run `skill-forge doctor` to verify your environment.
 
 1. **Hermes Agent** — Autonomous creation with concrete trigger conditions; patch over rewrite
 2. **planning-with-files** — File system as persistent working memory (context window = RAM, files = disk)
-3. **Anthropic skill-creator** — Eval-driven quality: description is a separate optimization problem, 20-case trigger evals, explain *why* not just *what*
+3. **Anthropic skill-creator** — Eval-driven quality: description is a separate optimization problem, 20-case trigger evals, explain _why_ not just _what_
 4. **DSPy** — All internal prompts (evaluation, improvement guidance) are self-optimized: structured FP/FN failure analysis, directional improvement, eval-driven variant selection
 
 ### Dual-File Security Model
@@ -63,12 +63,14 @@ New skills are assembled in `.skill-forge/staging/<name>/` (SKILL.md, scripts/, 
 ### Hooks Architecture
 
 **Skill-scoped hooks** (SKILL.md frontmatter) — only active when skill-forge is engaged. All four run via one Python entrypoint (`hook_draft_inject.py` / `skill_check.py`) for cross-platform consistency:
+
 - `UserPromptSubmit` — Inject draft header into attention window
 - `PreToolUse` — Small draft-head dump before Read/Glob/Grep/Bash (goal-drift guard)
 - `PostToolUse` — Nudge draft update after Write/Edit
 - `Stop` — Check for unprocessed skill opportunities (skipped when a draft is active, to prevent self-looping)
 
 **Global hooks** (`hooks/hooks.json`, auto-registered by plugin system):
+
 - `SessionStart` — Reset counters + inject skill inventory
 - `PostToolUse` — Tool counting + registry update on SKILL.md writes
 - `Stop` — Detect complex workflows, trigger auto mode
@@ -92,11 +94,11 @@ On each new session, `skill_catchup.py` scans the previous session's JSONL for u
 
 ## Evaluation Criteria
 
-| Dimension | Max | Checks |
-|-----------|-----|--------|
-| Trigger quality | 3 | Complex scenarios? Pushy coverage? Do NOT use? Under 250 chars? |
-| Step clarity | 3 | Concrete actions per step? Explains why, not just what? |
-| Completeness | 2 | Prerequisites / verification / notes? |
+| Dimension        | Max   | Checks                                                                      |
+| ---------------- | ----- | --------------------------------------------------------------------------- |
+| Trigger quality  | 3     | Complex scenarios? Pushy coverage? Do NOT use? Under 250 chars?             |
+| Step clarity     | 3     | Concrete actions per step? Explains why, not just what?                     |
+| Completeness     | 2     | Prerequisites / verification / notes?                                       |
 | Discriminability | bonus | Assertions pass both with and without skill -> no discriminability, rewrite |
 
 Minimum score to save: **6/8**.
@@ -115,26 +117,26 @@ The `skill-forge` CLI provides terminal-based plugin management without entering
 npm install -g @nekocode/skill-forge
 ```
 
-| Command | What it does |
-|---------|-------------|
-| `skill-forge install` | Install plugin (project scope embeds files, user scope uses plugin system) |
-| `skill-forge uninstall` | Uninstall plugin |
-| `skill-forge list` | Print skill registry for current project |
-| `skill-forge rm <name> [...]` | Remove skills (`--force` to skip confirmation) |
-| `skill-forge doctor` | Diagnose environment (claude CLI, plugin, Python, project structure) |
-| `skill-forge init` | Initialize `.claude/skills/` with empty registry |
-| `skill-forge sync` | Sync embedded plugin to latest release (project scope) |
-| `skill-forge upgrade` | Upgrade CLI to latest npm version |
+| Command                       | What it does                                                               |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| `skill-forge install`         | Install plugin (project scope embeds files, user scope uses plugin system) |
+| `skill-forge uninstall`       | Uninstall plugin                                                           |
+| `skill-forge list`            | Print skill registry for current project                                   |
+| `skill-forge rm <name> [...]` | Remove skills (`--force` to skip confirmation)                             |
+| `skill-forge doctor`          | Diagnose environment (claude CLI, plugin, Python, project structure)       |
+| `skill-forge init`            | Initialize `.claude/skills/` with empty registry                           |
+| `skill-forge sync`            | Sync embedded plugin to latest release (project scope)                     |
+| `skill-forge upgrade`         | Upgrade CLI to latest npm version                                          |
 
 ## Comparison
 
-| Feature | Hand-written SKILL.md | Anthropic skill-creator | skill-forge |
-|---------|----------------------|------------------------|-------------|
-| Auto-discover opportunities | - | - | scan |
-| Content quality evaluation | - | eval viewer | 4-dim evaluator |
-| Description trigger optimization | - | run_loop.py | improve |
-| Persistent working memory | - | - | draft/insights files |
-| Cross-session memory | - | - | catchup.py |
-| Scoped hooks (no global pollution) | - | - | frontmatter hooks |
-| Injection defense | - | - | dual-file isolation |
-| Self-iteration | - | - | improve skill-forge |
+| Feature                            | Hand-written SKILL.md | Anthropic skill-creator | skill-forge          |
+| ---------------------------------- | --------------------- | ----------------------- | -------------------- |
+| Auto-discover opportunities        | -                     | -                       | scan                 |
+| Content quality evaluation         | -                     | eval viewer             | 4-dim evaluator      |
+| Description trigger optimization   | -                     | run_loop.py             | improve              |
+| Persistent working memory          | -                     | -                       | draft/insights files |
+| Cross-session memory               | -                     | -                       | catchup.py           |
+| Scoped hooks (no global pollution) | -                     | -                       | frontmatter hooks    |
+| Injection defense                  | -                     | -                       | dual-file isolation  |
+| Self-iteration                     | -                     | -                       | improve skill-forge  |

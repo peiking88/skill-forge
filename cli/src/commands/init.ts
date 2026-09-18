@@ -3,7 +3,12 @@
 // Idempotent — wx flag atomically skips if registry already exists.
 
 import fs from "node:fs";
-import { EMPTY_REGISTRY, skillsDir, registryPath, resolveTargetRoot } from "../types.js";
+import {
+  EMPTY_REGISTRY,
+  skillsDir,
+  registryPath,
+  resolveTargetRoot,
+} from "../types.js";
 
 export function run(cwd: string): void {
   const { root, scope } = resolveTargetRoot(cwd);

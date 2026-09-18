@@ -1,6 +1,6 @@
 {
   "name": "skill-forge",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Self-evolving skills system — creates, discovers, iterates, and optimizes Claude Code skills.",
   "author": {
     "name": "nekocode",
@@ -9,6 +9,5 @@
   "repository": "https://github.com/nekocode/skill-forge",
   "license": "MIT",
   "commands": "./commands/",
-  "skills": "./skills/",
-  "agents": "./agents/"
+  "skills": "./skills/"
 }

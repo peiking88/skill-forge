@@ -117,7 +117,9 @@ describe("install run", () => {
     await run(["--scope", "project"]);
 
     expect(mockEmbedInstall).toHaveBeenCalled();
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Embedded skill-forge 0.5.0"));
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Embedded skill-forge 0.5.0"),
+    );
     logSpy.mockRestore();
   });
 });

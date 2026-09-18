@@ -33,9 +33,7 @@ export function run(cwd: string): string {
     s.updated,
   ]);
 
-  return (
-    `skill-forge registry [${scope}]\n\n` + formatTable(headers, rows)
-  );
+  return `skill-forge registry [${scope}]\n\n` + formatTable(headers, rows);
 }
 
 /**
@@ -46,14 +44,19 @@ export function formatTable(headers: string[], rows: string[][]): string {
   if (rows.length === 0) return "";
 
   const colWidths = headers.map((h, i) => {
-    const dataMax = rows.reduce((max, r) => Math.max(max, (r[i] ?? "").length), 0);
+    const dataMax = rows.reduce(
+      (max, r) => Math.max(max, (r[i] ?? "").length),
+      0,
+    );
     return Math.max(h.length, dataMax);
   });
 
   const pad = (str: string, width: number) => str.padEnd(width);
 
   const headerLine = headers.map((h, i) => pad(h, colWidths[i]!)).join("  ");
-  const separator = colWidths.map((w) => "\u2500".repeat(w)).join("\u2500\u2500");
+  const separator = colWidths
+    .map((w) => "\u2500".repeat(w))
+    .join("\u2500\u2500");
   const dataLines = rows.map((row) =>
     row.map((cell, i) => pad(cell, colWidths[i]!)).join("  "),
   );

@@ -35,7 +35,12 @@ export const MARKETPLACE_SOURCE = "nekocode/skill-forge";
 export const GITHUB_REPO = "nekocode/skill-forge";
 export const EMBED_VERSION_FILE = ".claude/hooks/skill-forge/version.json";
 export const EMBED_HOOKS_DIR = ".claude/hooks/skill-forge";
-export const EMBED_COMMANDS = ["scan.md", "create.md", "improve.md", "rename.md"];
+export const EMBED_COMMANDS = [
+  "scan.md",
+  "create.md",
+  "improve.md",
+  "rename.md",
+];
 // Subagent files bundled with skill-forge. Each lands in `.claude/agents/`
 // verbatim — the skill-forge prefix in the filename keeps them namespaced
 // so uninstall can match them without a registry lookup.
@@ -145,8 +150,7 @@ export function resolveRoot(cwd: string): ResolvedRoot {
 // ── Registry I/O ────────────────────────────────────────────────────────
 
 export type RegistryLoadResult =
-  | { ok: true; registry: SkillRegistry }
-  | { ok: false; error: string };
+  { ok: true; registry: SkillRegistry } | { ok: false; error: string };
 
 /**
  * Load and validate skill_registry.json.
@@ -162,21 +166,33 @@ export function loadRegistry(projectRoot: string): RegistryLoadResult {
   } catch (e: unknown) {
     // ENOENT = file not found; anything else is unexpected I/O error
     if ((e as NodeJS.ErrnoException).code === "ENOENT") {
-      return { ok: false, error: "No skill registry found. Run `skill-forge init` first." };
+      return {
+        ok: false,
+        error: "No skill registry found. Run `skill-forge init` first.",
+      };
     }
-    return { ok: false, error: "Failed to read skill_registry.json — I/O error." };
+    return {
+      ok: false,
+      error: "Failed to read skill_registry.json — I/O error.",
+    };
   }
 
   let raw: unknown;
   try {
     raw = JSON.parse(content);
   } catch {
-    return { ok: false, error: "Failed to parse skill_registry.json — file may be corrupted." };
+    return {
+      ok: false,
+      error: "Failed to parse skill_registry.json — file may be corrupted.",
+    };
   }
 
   const registry = raw as SkillRegistry;
   if (!Array.isArray(registry.skills)) {
-    return { ok: false, error: "Malformed skill_registry.json — missing skills array." };
+    return {
+      ok: false,
+      error: "Malformed skill_registry.json — missing skills array.",
+    };
   }
 
   // Auto-prune orphaned entries whose skill directory no longer exists
@@ -192,6 +208,12 @@ export function loadRegistry(projectRoot: string): RegistryLoadResult {
   return { ok: true, registry };
 }
 
-export function saveRegistry(projectRoot: string, registry: SkillRegistry): void {
-  fs.writeFileSync(registryPath(projectRoot), JSON.stringify(registry, null, 2));
+export function saveRegistry(
+  projectRoot: string,
+  registry: SkillRegistry,
+): void {
+  fs.writeFileSync(
+    registryPath(projectRoot),
+    JSON.stringify(registry, null, 2),
+  );
 }

@@ -8,11 +8,11 @@
 
 Claude Code skills 解决了「把工作流固化成可复用 slash command」的问题，但留了三个缺口：
 
-| 缺口 | skill-forge 的解法 |
-|------|-------------------|
-| 不知道什么时候该建 skill | 自动检测复杂任务，主动提问 |
-| 不知道 skill 写得好不好 | 内置 4 维评估器，不达标不落盘 |
-| 不知道 skill 会不会触发 | 独立的 description 优化 phase，eval 驱动 |
+| 缺口                     | skill-forge 的解法                       |
+| ------------------------ | ---------------------------------------- |
+| 不知道什么时候该建 skill | 自动检测复杂任务，主动提问               |
+| 不知道 skill 写得好不好  | 内置 4 维评估器，不达标不落盘            |
+| 不知道 skill 会不会触发  | 独立的 description 优化 phase，eval 驱动 |
 
 ## 安装
 
@@ -34,11 +34,11 @@ skill-forge install
 
 ## 命令
 
-| 命令 | 功能 |
-|------|------|
-| `/scan [prompt]` | 扫描项目发现 skill 机会。可选 prompt 作为聚焦提示 |
-| `/create <prompt>` | 从 prompt 创建新 skill，name 自动推导 |
-| `/improve <prompt>` | 从 prompt 迭代 skill，目标从 registry 匹配 |
+| 命令                  | 功能                                                                  |
+| --------------------- | --------------------------------------------------------------------- |
+| `/scan [prompt]`      | 扫描项目发现 skill 机会。可选 prompt 作为聚焦提示                     |
+| `/create <prompt>`    | 从 prompt 创建新 skill，name 自动推导                                 |
+| `/improve <prompt>`   | 从 prompt 迭代 skill，目标从 registry 匹配                            |
 | `/rename <old> <new>` | AI 驱动的 skill 重命名 — 更新目录、SKILL.md 全文、workspace、registry |
 
 **Auto 模式**：完成复杂任务（5+ 工具调用）后，Stop hook 自动检测并提议创建 skill，无需手动调用。
@@ -49,7 +49,7 @@ skill-forge install
 
 1. **Hermes Agent** — 自主创建，触发条件具体化；patch 优先于 rewrite
 2. **planning-with-files** — 文件系统作为持久工作记忆（Context Window = RAM，文件 = 磁盘）
-3. **Anthropic skill-creator** — Eval 驱动质量保证：description 是独立优化问题，20 条触发测试，解释 *why* 而非只写 *what*
+3. **Anthropic skill-creator** — Eval 驱动质量保证：description 是独立优化问题，20 条触发测试，解释 _why_ 而非只写 _what_
 4. **DSPy** — 所有内部 prompt（评估、改进引导）均经过自优化：结构化 FP/FN 失败分析、方向性改进、eval 驱动变体选择
 
 ### 双文件安全模型
@@ -63,12 +63,14 @@ skill-forge install
 ### Hooks 架构
 
 **Skill-scoped hooks**（SKILL.md frontmatter）— 仅 skill-forge 激活时生效。四个 hook 通过一个 Python 入口（`hook_draft_inject.py` / `skill_check.py`）跨平台统一：
+
 - `UserPromptSubmit` — 注入草稿头部到注意力窗口
 - `PreToolUse` — Read/Glob/Grep/Bash 前注入小剂量草稿头（防 goal drift，减 transcript 噪声）
 - `PostToolUse` — Write/Edit 后提示同步 insights→draft
 - `Stop` — 检查未处理机会（活跃草稿时 skip，防套娃）
 
 **全局 hooks**（`hooks/hooks.json`，plugin 系统自动注册）：
+
 - `SessionStart` — 重置计数器 + 注入 skill 清单
 - `PostToolUse` — 工具计数 + SKILL.md 写入时更新 registry
 - `Stop` — 检测复杂工作流，触发 auto 模式
@@ -92,12 +94,12 @@ skill-forge install
 
 ## 评估标准
 
-| 维度 | 满分 | 检查内容 |
-|------|------|---------|
-| Trigger quality | 3 | 复杂场景举例？Pushy coverage？Do NOT use？250 字以内？ |
-| Step clarity | 3 | 每步有具体动作？解释 why 不只是 what？ |
-| Completeness | 2 | 有 prerequisites / verification / notes？ |
-| 区分度 | bonus | 有/无 skill 时 assertion 都过 → 无区分度，需改写 |
+| 维度            | 满分  | 检查内容                                               |
+| --------------- | ----- | ------------------------------------------------------ |
+| Trigger quality | 3     | 复杂场景举例？Pushy coverage？Do NOT use？250 字以内？ |
+| Step clarity    | 3     | 每步有具体动作？解释 why 不只是 what？                 |
+| Completeness    | 2     | 有 prerequisites / verification / notes？              |
+| 区分度          | bonus | 有/无 skill 时 assertion 都过 → 无区分度，需改写       |
 
 落盘最低分：**6/8**。
 
@@ -115,26 +117,26 @@ skill-forge install
 npm install -g @nekocode/skill-forge
 ```
 
-| 命令 | 功能 |
-|------|------|
-| `skill-forge install` | 安装 plugin（project scope 嵌入文件，user scope 走 plugin 系统） |
-| `skill-forge uninstall` | 卸载 plugin |
-| `skill-forge list` | 打印当前项目 skill 注册表 |
-| `skill-forge rm <name> [...]` | 删除 skill（`--force` 跳过确认） |
-| `skill-forge doctor` | 诊断环境（claude CLI / plugin / Python / 项目结构） |
-| `skill-forge init` | 初始化 `.claude/skills/` + 空注册表 |
-| `skill-forge sync` | 同步 embed 文件到最新 release（project scope） |
-| `skill-forge upgrade` | 升级 CLI npm 包到最新版本 |
+| 命令                          | 功能                                                             |
+| ----------------------------- | ---------------------------------------------------------------- |
+| `skill-forge install`         | 安装 plugin（project scope 嵌入文件，user scope 走 plugin 系统） |
+| `skill-forge uninstall`       | 卸载 plugin                                                      |
+| `skill-forge list`            | 打印当前项目 skill 注册表                                        |
+| `skill-forge rm <name> [...]` | 删除 skill（`--force` 跳过确认）                                 |
+| `skill-forge doctor`          | 诊断环境（claude CLI / plugin / Python / 项目结构）              |
+| `skill-forge init`            | 初始化 `.claude/skills/` + 空注册表                              |
+| `skill-forge sync`            | 同步 embed 文件到最新 release（project scope）                   |
+| `skill-forge upgrade`         | 升级 CLI npm 包到最新版本                                        |
 
 ## 对比
 
-| 特性 | 手写 SKILL.md | Anthropic skill-creator | skill-forge |
-|------|--------------|------------------------|-------------|
-| 自动发现机会 | - | - | scan |
-| 内容质量评估 | - | eval viewer | 4 维评估器 |
-| Description 触发优化 | - | run_loop.py | improve |
-| 持久工作记忆 | - | - | draft/insights 文件 |
-| 跨 session 记忆 | - | - | catchup.py |
-| Hooks 内聚（不污染全局） | - | - | frontmatter hooks |
-| 注入防御 | - | - | 双文件隔离 |
-| 自我迭代 | - | - | improve skill-forge |
+| 特性                     | 手写 SKILL.md | Anthropic skill-creator | skill-forge         |
+| ------------------------ | ------------- | ----------------------- | ------------------- |
+| 自动发现机会             | -             | -                       | scan                |
+| 内容质量评估             | -             | eval viewer             | 4 维评估器          |
+| Description 触发优化     | -             | run_loop.py             | improve             |
+| 持久工作记忆             | -             | -                       | draft/insights 文件 |
+| 跨 session 记忆          | -             | -                       | catchup.py          |
+| Hooks 内聚（不污染全局） | -             | -                       | frontmatter hooks   |
+| 注入防御                 | -             | -                       | 双文件隔离          |
+| 自我迭代                 | -             | -                       | improve skill-forge |

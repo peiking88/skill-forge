@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import sys
 from datetime import date
@@ -37,16 +38,21 @@ from shared import (
 def resolve_skills_root(
     scope: str | None,
     project_dir: Path,
+    old_name: str | None = None,
 ) -> tuple[Path, str]:
     """Return (skills_dir, scope_label).
 
-    `scope` in {"project", "user", None}. None auto-detects: project dir first
-    if it has `.claude/skills/`, else user dir.
+    `scope` in {"project", "user", None}. None auto-detects: user dir first
+    when it already holds `old_name` (covers symlink installs — a project
+    `.claude/` in the cwd must not shadow an existing user install), else
+    project dir if it has `.claude/skills/`, else user dir.
     """
     project_skills = project_dir / SKILLS_DIR
     if scope == "project":
         return project_skills, "project"
     if scope == "user":
+        return USER_SKILLS_DIR, "user"
+    if old_name and (USER_SKILLS_DIR / old_name).exists():
         return USER_SKILLS_DIR, "user"
     if project_skills.is_dir():
         return project_skills, "project"
@@ -97,19 +103,53 @@ def build_plan(
 
     old_dir = skills_root / old_name
     new_dir = skills_root / new_name
+    symlink_install = old_dir.is_symlink()
+    target_dir = old_dir.resolve() if symlink_install else old_dir
     if not old_dir.is_dir():
         errors.append(f"skill dir not found: {old_dir}")
     if new_dir.exists():
         errors.append(f"target already exists: {new_dir}")
+    if symlink_install:
+        warnings.append(
+            f"{old_dir} is a symlink → link is repointed only; content is "
+            f"edited in place at {target_dir} (shared source repo)"
+        )
 
-    registry_path = skills_root / REGISTRY_FILE.name
-    registry = load_registry(registry_path)
-    entry = next(
-        (s for s in registry.get("skills", []) if s.get("name") == old_name),
-        None,
+    # Registry lookup follows the skill dir itself first (symlink installs
+    # keep the registry inside the source repo), then the scope-level
+    # registry. Every registry that holds the entry gets updated.
+    registry_candidates: list[Path] = []
+    for rp in (
+        target_dir / SKILLS_DIR / REGISTRY_FILE.name,
+        skills_root / REGISTRY_FILE.name,
+    ):
+        if rp.is_file() and all(
+            rp.resolve() != c.resolve() for c in registry_candidates
+        ):
+            registry_candidates.append(rp)
+    registry_path = (
+        registry_candidates[-1] if registry_candidates
+        else skills_root / REGISTRY_FILE.name
     )
+    registry = load_registry(registry_path)
+    registry_updates: list[tuple[Path, dict, dict]] = []
+    entry = None
+    for rp in registry_candidates:
+        reg = load_registry(rp)
+        ent = next(
+            (s for s in reg.get("skills", []) if s.get("name") == old_name),
+            None,
+        )
+        if ent is not None:
+            if entry is None:
+                entry, registry_path, registry = ent, rp, reg
+            registry_updates.append((rp, reg, ent))
     if entry is None:
-        errors.append(f"registry has no entry named {old_name!r}")
+        searched = ", ".join(str(p) for p in registry_candidates)
+        errors.append(
+            f"registry has no entry named {old_name!r}"
+            + (f" (searched: {searched})" if searched else "")
+        )
 
     # Active draft guardrail — if mid-session on this skill, renaming mid-flight
     # corrupts the draft's implicit target.
@@ -124,7 +164,8 @@ def build_plan(
     dir_renames: list[tuple[Path, Path]] = []
 
     if old_dir.is_dir():
-        file_edits.extend(_scan_dir(old_dir, old_name))
+        # Scan the real files (resolved target for symlink installs).
+        file_edits.extend(_scan_dir(target_dir, old_name))
         dir_renames.append((old_dir, new_dir))
 
     return {
@@ -134,9 +175,12 @@ def build_plan(
         "warnings": warnings,
         "file_edits": file_edits,
         "dir_renames": dir_renames,
+        "symlink_install": symlink_install,
+        "link_target": target_dir,
         "registry_path": registry_path,
         "registry": registry,
         "registry_entry": entry,
+        "registry_updates": registry_updates,
     }
 
 
@@ -157,13 +201,18 @@ def execute_plan(plan: dict) -> None:
         path.write_text(text.replace(old_name, new_name))
 
     for src, dst in plan["dir_renames"]:
-        shutil.move(str(src), str(dst))
+        if plan.get("symlink_install"):
+            # Repoint the link only; the source repo is never moved.
+            link_target = os.readlink(src)
+            src.unlink()
+            dst.symlink_to(link_target)
+        else:
+            shutil.move(str(src), str(dst))
 
-    entry = plan["registry_entry"]
-    if entry is not None:
+    for rp, reg, entry in plan.get("registry_updates", []):
         entry["name"] = new_name
         entry["updated"] = date.today().isoformat()
-        save_registry(plan["registry"], plan["registry_path"])
+        save_registry(reg, rp)
 
 
 # ── Rendering ─────────────────────────────────────────────────────
@@ -204,11 +253,20 @@ def render_plan(
     for src, dst in plan["dir_renames"]:
         lines.append(f"  {src} → {dst}")
 
+    if plan.get("symlink_install"):
+        lines.append("")
+        lines.append(
+            f"Symlink install: link repointed only; "
+            f"source repo stays at {plan['link_target']}"
+        )
+
     lines.append("")
     if plan["registry_entry"] is not None:
+        paths = ", ".join(
+            str(p) for p, _, _ in plan.get("registry_updates", [])
+        ) or str(plan["registry_path"])
         lines.append(
-            f"Registry: update entry {old_name!r} → {new_name!r} "
-            f"in {plan['registry_path']}"
+            f"Registry: update entry {old_name!r} → {new_name!r} in {paths}"
         )
     else:
         lines.append("Registry: no matching entry (would be an error)")
@@ -249,7 +307,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     project_dir = args.project_dir or Path.cwd()
 
-    skills_root, scope_label = resolve_skills_root(args.scope, project_dir)
+    skills_root, scope_label = resolve_skills_root(
+        args.scope, project_dir, args.old_name
+    )
     plan = build_plan(args.old_name, args.new_name, skills_root, project_dir)
 
     if args.json:

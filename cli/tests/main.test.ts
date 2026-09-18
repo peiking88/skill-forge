@@ -36,7 +36,13 @@ describe("parseCommand", () => {
   });
 
   it("parses rm command with args", () => {
-    const result = parseCommand(["node", "skill-forge", "rm", "foo", "--force"]);
+    const result = parseCommand([
+      "node",
+      "skill-forge",
+      "rm",
+      "foo",
+      "--force",
+    ]);
     expect(result).toEqual({ command: "rm", args: ["foo", "--force"] });
   });
 
@@ -62,19 +68,24 @@ describe("PLUGIN_VERSION", () => {
   });
 
   it("matches .claude-plugin/plugin.json", () => {
-    const pluginJson = require("../../.claude-plugin/plugin.json") as { version: string };
+    const pluginJson = require("../../.claude-plugin/plugin.json") as {
+      version: string;
+    };
     expect(PLUGIN_VERSION).toBe(pluginJson.version);
   });
 });
 
 describe("printVersion", () => {
   it("prints cli and plugin versions on separate labeled lines", () => {
-    const cliVersion = (require("../package.json") as { version: string }).version;
+    const cliVersion = (require("../package.json") as { version: string })
+      .version;
 
     const logs: string[] = [];
-    const spy = vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
-      logs.push(String(args[0]));
-    });
+    const spy = vi
+      .spyOn(console, "log")
+      .mockImplementation((...args: unknown[]) => {
+        logs.push(String(args[0]));
+      });
 
     printVersion();
 

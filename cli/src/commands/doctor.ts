@@ -20,7 +20,10 @@ function checkClaudeCli(): CheckResult {
   const name = "claude CLI";
   try {
     const cmd = process.platform === "win32" ? "where claude" : "which claude";
-    const location = execSync(cmd, { encoding: "utf-8", timeout: EXEC_TIMEOUT_MS }).trim();
+    const location = execSync(cmd, {
+      encoding: "utf-8",
+      timeout: EXEC_TIMEOUT_MS,
+    }).trim();
     return { name, status: "pass", message: `Found: ${location}` };
   } catch {
     return {
@@ -42,8 +45,13 @@ function checkPluginInstalled(cwd: string): CheckResult {
 
   // Fall back to plugin check
   try {
-    const output = execSync("claude plugin list", { encoding: "utf-8", timeout: EXEC_TIMEOUT_MS });
-    if (output.split("\n").some((line) => line.trim().startsWith("skill-forge"))) {
+    const output = execSync("claude plugin list", {
+      encoding: "utf-8",
+      timeout: EXEC_TIMEOUT_MS,
+    });
+    if (
+      output.split("\n").some((line) => line.trim().startsWith("skill-forge"))
+    ) {
       return { name, status: "pass", message: "Plugin installed" };
     }
     return {
@@ -63,7 +71,10 @@ function checkPluginInstalled(cwd: string): CheckResult {
 function checkPython(): CheckResult {
   const name = "Python 3";
   try {
-    const version = execSync("python3 --version", { encoding: "utf-8", timeout: EXEC_TIMEOUT_MS }).trim();
+    const version = execSync("python3 --version", {
+      encoding: "utf-8",
+      timeout: EXEC_TIMEOUT_MS,
+    }).trim();
     return { name, status: "pass", message: version };
   } catch {
     return {

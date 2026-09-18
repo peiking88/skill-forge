@@ -15,11 +15,12 @@ import { run as upgradeRun } from "./commands/upgrade.js";
 
 // Single source of truth — reads version from package.json
 const require = createRequire(import.meta.url);
-const VERSION: string = (require("../package.json") as { version: string }).version;
+const VERSION: string = (require("../package.json") as { version: string })
+  .version;
 
 // Synced by bump-version.sh when plugin version changes.
 // Cannot read .claude-plugin/plugin.json at runtime — it's outside the npm package.
-export const PLUGIN_VERSION = "0.9.1";
+export const PLUGIN_VERSION = "0.10.0";
 
 const KNOWN_COMMANDS = new Set([
   "install",
@@ -43,7 +44,8 @@ export function parseCommand(argv: string[]): ParsedCommand {
   if (raw.length === 0) return { command: "help", args: [] };
 
   const first = raw[0]!;
-  if (first === "--help" || first === "-h") return { command: "help", args: [] };
+  if (first === "--help" || first === "-h")
+    return { command: "help", args: [] };
   if (first === "--version" || first === "-v")
     return { command: "version", args: [] };
 

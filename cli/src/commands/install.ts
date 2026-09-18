@@ -23,14 +23,20 @@ export function parseScope(args: string[]): Scope | undefined {
 /** Interactive scope prompt. Returns selected scope. */
 export function promptScope(): Promise<Scope> {
   return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
     console.log("\nInstall scope:");
-    console.log("  1) project  — embed into this project (team gets it on clone)");
+    console.log(
+      "  1) project  — embed into this project (team gets it on clone)",
+    );
     console.log("  2) user     — install plugin globally");
     rl.question("\nChoose [1/2] (default: 1): ", (answer) => {
       rl.close();
       const trimmed = answer.trim();
-      if (trimmed === "" || trimmed === "1" || trimmed === "project") resolve("project");
+      if (trimmed === "" || trimmed === "1" || trimmed === "project")
+        resolve("project");
       else if (trimmed === "2" || trimmed === "user") resolve("user");
       else {
         console.error(`Invalid choice: ${trimmed}`);
@@ -46,9 +52,13 @@ export async function run(args: string[]): Promise<void> {
   if (scope === "project") {
     try {
       const version = embedInstall(process.cwd());
-      console.log(`Embedded skill-forge ${version} into .claude/. Run \`skill-forge doctor\` to verify.`);
+      console.log(
+        `Embedded skill-forge ${version} into .claude/. Run \`skill-forge doctor\` to verify.`,
+      );
     } catch (e: unknown) {
-      console.error(`Embed failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error(
+        `Embed failed: ${e instanceof Error ? e.message : String(e)}`,
+      );
       console.error("Is `gh` CLI installed and authenticated?");
       process.exit(1);
     }

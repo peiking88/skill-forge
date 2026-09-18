@@ -32,8 +32,7 @@ describe("doctor command", () => {
       if (typeof cmd !== "string") return "";
       if (cmd.includes("which claude") || cmd.includes("where claude"))
         return "/usr/local/bin/claude";
-      if (cmd.includes("plugin list"))
-        return "skill-forge  0.2.0  installed";
+      if (cmd.includes("plugin list")) return "skill-forge  0.2.0  installed";
       if (cmd.includes("python3 --version")) return "Python 3.12.0";
       return "";
     });
@@ -89,8 +88,8 @@ describe("doctor command", () => {
     });
 
     const results = runDoctor(tmpDir);
-    const skillsDirCheck = results.find((r: CheckResult) =>
-      r.name === "skills directory",
+    const skillsDirCheck = results.find(
+      (r: CheckResult) => r.name === "skills directory",
     );
     expect(skillsDirCheck?.status).toBe("warn");
   });

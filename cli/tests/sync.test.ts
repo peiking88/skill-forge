@@ -11,7 +11,11 @@ vi.mock("../src/commands/embed.js", () => ({
 }));
 
 import { execSync } from "node:child_process";
-import { detectEmbedInstall, readVersionFile, embedInstall } from "../src/commands/embed.js";
+import {
+  detectEmbedInstall,
+  readVersionFile,
+  embedInstall,
+} from "../src/commands/embed.js";
 import { run } from "../src/commands/sync.js";
 
 const mockExecSync = vi.mocked(execSync);
@@ -43,7 +47,10 @@ describe("sync command", () => {
 
   it("reports up to date when versions match", () => {
     mockDetect.mockReturnValue(true);
-    mockReadVersion.mockReturnValue({ version: "0.5.0", installed: "2026-04-15T00:00:00Z" });
+    mockReadVersion.mockReturnValue({
+      version: "0.5.0",
+      installed: "2026-04-15T00:00:00Z",
+    });
     mockExecSync.mockReturnValue("v0.5.0" as any);
 
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -56,7 +63,10 @@ describe("sync command", () => {
 
   it("exits on gh api failure", () => {
     mockDetect.mockReturnValue(true);
-    mockReadVersion.mockReturnValue({ version: "0.4.0", installed: "2026-04-15T00:00:00Z" });
+    mockReadVersion.mockReturnValue({
+      version: "0.4.0",
+      installed: "2026-04-15T00:00:00Z",
+    });
     mockExecSync.mockImplementation(() => {
       throw new Error("network error");
     });
@@ -77,7 +87,10 @@ describe("sync command", () => {
 
   it("calls embedInstall when newer version available", () => {
     mockDetect.mockReturnValue(true);
-    mockReadVersion.mockReturnValue({ version: "0.4.0", installed: "2026-04-15T00:00:00Z" });
+    mockReadVersion.mockReturnValue({
+      version: "0.4.0",
+      installed: "2026-04-15T00:00:00Z",
+    });
     mockExecSync.mockReturnValue("v0.5.0" as any);
     mockEmbedInstall.mockReturnValue("0.5.0");
 

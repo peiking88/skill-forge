@@ -25,7 +25,10 @@ export function parseNames(args: string[]): string[] {
 /** Prompt user to confirm deletion. Default (empty) = cancel. */
 export function promptConfirm(names: string[]): Promise<boolean> {
   return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
     console.log(`\nWill delete: ${names.join(", ")}`);
     rl.question("Confirm? [y/N]: ", (answer) => {
       rl.close();

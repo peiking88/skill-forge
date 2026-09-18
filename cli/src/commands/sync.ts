@@ -2,11 +2,7 @@
 // Only works for project-embed installs. For CLI upgrades, use `upgrade`.
 
 import { execSync } from "node:child_process";
-import {
-  detectEmbedInstall,
-  readVersionFile,
-  embedInstall,
-} from "./embed.js";
+import { detectEmbedInstall, readVersionFile, embedInstall } from "./embed.js";
 import { GITHUB_REPO, EMBED_VERSION_FILE } from "../types.js";
 import path from "node:path";
 
@@ -29,7 +25,9 @@ export function run(projectRoot: string): void {
       { encoding: "utf-8" },
     ).trim();
   } catch {
-    console.error("Failed to check latest release. Is `gh` CLI installed and authenticated?");
+    console.error(
+      "Failed to check latest release. Is `gh` CLI installed and authenticated?",
+    );
     process.exit(1);
   }
 

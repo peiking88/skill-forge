@@ -99,9 +99,7 @@ describe("promptConfirm", () => {
     mockReadline("n");
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     await promptConfirm(["alpha", "beta"]);
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("alpha, beta"),
-    );
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("alpha, beta"));
     logSpy.mockRestore();
   });
 });
@@ -128,9 +126,42 @@ describe("removeSkills", () => {
     const registry = {
       version: "1",
       skills: [
-        { name: "foo", version: "1.0.0", scope: "project", created: "2026-01-01", updated: "2026-01-01", auto_trigger: true, description_chars: 100, eval_score: 6, trigger_score: null, usage_count: 0 },
-        { name: "bar", version: "1.0.0", scope: "project", created: "2026-01-01", updated: "2026-01-01", auto_trigger: true, description_chars: 80, eval_score: 5, trigger_score: null, usage_count: 0 },
-        { name: "keep", version: "1.0.0", scope: "project", created: "2026-01-01", updated: "2026-01-01", auto_trigger: true, description_chars: 90, eval_score: 7, trigger_score: null, usage_count: 0 },
+        {
+          name: "foo",
+          version: "1.0.0",
+          scope: "project",
+          created: "2026-01-01",
+          updated: "2026-01-01",
+          auto_trigger: true,
+          description_chars: 100,
+          eval_score: 6,
+          trigger_score: null,
+          usage_count: 0,
+        },
+        {
+          name: "bar",
+          version: "1.0.0",
+          scope: "project",
+          created: "2026-01-01",
+          updated: "2026-01-01",
+          auto_trigger: true,
+          description_chars: 80,
+          eval_score: 5,
+          trigger_score: null,
+          usage_count: 0,
+        },
+        {
+          name: "keep",
+          version: "1.0.0",
+          scope: "project",
+          created: "2026-01-01",
+          updated: "2026-01-01",
+          auto_trigger: true,
+          description_chars: 90,
+          eval_score: 7,
+          trigger_score: null,
+          usage_count: 0,
+        },
       ],
     };
 
@@ -166,9 +197,7 @@ describe("rm run", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  function setupRegistry(
-    skills: Array<{ name: string }>,
-  ) {
+  function setupRegistry(skills: Array<{ name: string }>) {
     const dir = path.join(tmpDir, ".claude", "skills");
     for (const s of skills) {
       fs.mkdirSync(path.join(dir, s.name), { recursive: true });

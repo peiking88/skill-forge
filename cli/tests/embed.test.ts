@@ -24,7 +24,11 @@ import {
   rewriteContentPaths,
   rewriteCommandContent,
 } from "../src/commands/embed.js";
-import { embedCommandName, EMBED_AGENTS, EMBED_COMMANDS } from "../src/types.js";
+import {
+  embedCommandName,
+  EMBED_AGENTS,
+  EMBED_COMMANDS,
+} from "../src/types.js";
 
 const mockExecSync = vi.mocked(execSync);
 
@@ -39,7 +43,8 @@ describe("convertHooksForEmbed", () => {
             hooks: [
               {
                 type: "command",
-                command: 'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/skill_forge_stop.py"',
+                command:
+                  'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/skill_forge_stop.py"',
               },
             ],
           },
@@ -48,7 +53,9 @@ describe("convertHooksForEmbed", () => {
     };
     const result = convertHooksForEmbed(input);
     const stop = result.hooks.Stop[0].hooks[0];
-    expect(stop.command).toContain("${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/");
+    expect(stop.command).toContain(
+      "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/",
+    );
     expect(stop.command).not.toContain("${CLAUDE_PLUGIN_ROOT}/hooks/");
     expect(stop.command).toContain("skill_forge_stop.py");
   });
@@ -61,7 +68,8 @@ describe("convertHooksForEmbed", () => {
             hooks: [
               {
                 type: "command",
-                command: 'python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/phase0_load.py"',
+                command:
+                  'python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/phase0_load.py"',
               },
             ],
           },
@@ -81,10 +89,12 @@ describe("convertHooksForEmbed", () => {
           {
             hooks: [
               {
-                command: 'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/skill_forge_post_tool.py"',
+                command:
+                  'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/skill_forge_post_tool.py"',
               },
               {
-                command: 'python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/scan_structure.py"',
+                command:
+                  'python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/scan_structure.py"',
               },
             ],
           },
@@ -93,7 +103,9 @@ describe("convertHooksForEmbed", () => {
     };
     const result = convertHooksForEmbed(input);
     const hooks = result.hooks.PostToolUse[0].hooks;
-    expect(hooks[0].command).toContain("${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/");
+    expect(hooks[0].command).toContain(
+      "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/",
+    );
     expect(hooks[1].command).toContain("${CLAUDE_PROJECT_DIR}/.claude/skills/");
   });
 });
@@ -105,14 +117,18 @@ describe("rewriteHooksJsonPaths", () => {
     const input =
       'python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/phase0_load.py"';
     const out = rewriteHooksJsonPaths(input);
-    expect(out).toContain("${CLAUDE_PROJECT_DIR}/.claude/skills/skill-forge/scripts/phase0_load.py");
+    expect(out).toContain(
+      "${CLAUDE_PROJECT_DIR}/.claude/skills/skill-forge/scripts/phase0_load.py",
+    );
     expect(out).not.toContain("${CLAUDE_PLUGIN_ROOT}");
   });
 
   it("rewrites hooks path for hooks context using CLAUDE_PROJECT_DIR", () => {
     const input = 'python3 "${CLAUDE_PLUGIN_ROOT}/hooks/skill_check.py"';
     const out = rewriteHooksJsonPaths(input);
-    expect(out).toContain("${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/skill_check.py");
+    expect(out).toContain(
+      "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/skill_check.py",
+    );
   });
 
   it("preserves unrelated text", () => {
@@ -128,7 +144,9 @@ describe("rewriteContentPaths", () => {
     const input =
       'python3 "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/phase0_load.py"';
     const out = rewriteContentPaths(input);
-    expect(out).toContain('python3 ".claude/skills/skill-forge/scripts/phase0_load.py"');
+    expect(out).toContain(
+      'python3 ".claude/skills/skill-forge/scripts/phase0_load.py"',
+    );
     expect(out).not.toContain("${CLAUDE_PLUGIN_ROOT}");
     expect(out).not.toContain("${CLAUDE_PROJECT_DIR}");
   });
@@ -160,7 +178,7 @@ describe("rewriteCommandContent", () => {
     const input =
       'See "${CLAUDE_PLUGIN_ROOT}/skills/skill-forge/scripts/phase0_load.py". Invoke skill-forge:skill-forge.';
     const out = rewriteCommandContent(input);
-    expect(out).toContain('.claude/skills/skill-forge/scripts/phase0_load.py');
+    expect(out).toContain(".claude/skills/skill-forge/scripts/phase0_load.py");
     expect(out).not.toContain("${CLAUDE_PLUGIN_ROOT}");
     expect(out).not.toContain("${CLAUDE_PROJECT_DIR}");
     expect(out).not.toContain("skill-forge:skill-forge");
@@ -177,7 +195,8 @@ describe("mergeHooksIntoSettings", () => {
           hooks: [
             {
               type: "command",
-              command: 'python3 "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/skill_forge_stop.py"',
+              command:
+                'python3 "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/skill_forge_stop.py"',
             },
           ],
         },
@@ -189,7 +208,9 @@ describe("mergeHooksIntoSettings", () => {
     const result = mergeHooksIntoSettings({}, sfHooks);
     expect(result.hooks).toBeDefined();
     expect(result.hooks.Stop).toBeDefined();
-    expect(result.hooks.Stop[0].hooks[0].command).toContain("skill_forge_stop.py");
+    expect(result.hooks.Stop[0].hooks[0].command).toContain(
+      "skill_forge_stop.py",
+    );
   });
 
   it("preserves existing user hooks when adding skill-forge hooks", () => {
@@ -229,7 +250,8 @@ describe("mergeHooksIntoSettings", () => {
       hooks: [
         {
           type: "command",
-          command: 'python3 "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/skill_forge_stop.py"',
+          command:
+            'python3 "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/skill_forge_stop.py"',
         },
       ],
     };
@@ -262,8 +284,26 @@ describe("mergeHooksIntoSettings", () => {
   it("merges hooks from multiple events", () => {
     const multiHooks = {
       hooks: {
-        Stop: [{ hooks: [{ command: '"${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/stop.py"' }] }],
-        SessionStart: [{ hooks: [{ command: '"${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/start.py"' }] }],
+        Stop: [
+          {
+            hooks: [
+              {
+                command:
+                  '"${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/stop.py"',
+              },
+            ],
+          },
+        ],
+        SessionStart: [
+          {
+            hooks: [
+              {
+                command:
+                  '"${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/start.py"',
+              },
+            ],
+          },
+        ],
       },
     };
     const result = mergeHooksIntoSettings({}, multiHooks);
@@ -330,9 +370,18 @@ describe("removeEmbedFiles", () => {
     // SF command files (prefixed, as embed installs them)
     const commandsDir = path.join(root, ".claude", "commands");
     fs.mkdirSync(commandsDir, { recursive: true });
-    fs.writeFileSync(path.join(commandsDir, embedCommandName("scan.md")), "scan");
-    fs.writeFileSync(path.join(commandsDir, embedCommandName("create.md")), "create");
-    fs.writeFileSync(path.join(commandsDir, embedCommandName("improve.md")), "improve");
+    fs.writeFileSync(
+      path.join(commandsDir, embedCommandName("scan.md")),
+      "scan",
+    );
+    fs.writeFileSync(
+      path.join(commandsDir, embedCommandName("create.md")),
+      "create",
+    );
+    fs.writeFileSync(
+      path.join(commandsDir, embedCommandName("improve.md")),
+      "improve",
+    );
     // User command file
     fs.writeFileSync(path.join(commandsDir, "my-command.md"), "user");
 
@@ -353,7 +402,10 @@ describe("removeEmbedFiles", () => {
     // SF hooks dir + version.json
     const sfHooks = path.join(root, ".claude", "hooks", "skill-forge");
     fs.mkdirSync(sfHooks, { recursive: true });
-    fs.writeFileSync(path.join(sfHooks, "version.json"), JSON.stringify({ version: "0.5.0" }));
+    fs.writeFileSync(
+      path.join(sfHooks, "version.json"),
+      JSON.stringify({ version: "0.5.0" }),
+    );
     fs.writeFileSync(path.join(sfHooks, "skill_forge_stop.py"), "# stop");
 
     // settings.json with SF + user hooks
@@ -395,9 +447,15 @@ describe("removeEmbedFiles", () => {
     removeEmbedFiles(tmpDir);
 
     const commandsDir = path.join(tmpDir, ".claude", "commands");
-    expect(fs.existsSync(path.join(commandsDir, embedCommandName("scan.md")))).toBe(false);
-    expect(fs.existsSync(path.join(commandsDir, embedCommandName("create.md")))).toBe(false);
-    expect(fs.existsSync(path.join(commandsDir, embedCommandName("improve.md")))).toBe(false);
+    expect(
+      fs.existsSync(path.join(commandsDir, embedCommandName("scan.md"))),
+    ).toBe(false);
+    expect(
+      fs.existsSync(path.join(commandsDir, embedCommandName("create.md"))),
+    ).toBe(false);
+    expect(
+      fs.existsSync(path.join(commandsDir, embedCommandName("improve.md"))),
+    ).toBe(false);
     expect(fs.existsSync(path.join(commandsDir, "my-command.md"))).toBe(true);
   });
 
@@ -592,18 +650,19 @@ describe("embedInstall", () => {
         },
       }),
     );
-
   }
 
   /**
    * Mock factory for execSync — routes gh/tar commands with per-test overrides.
    * Returns the captured tmp dir so tests can assert on it.
    */
-  function makeMockExec(opts: {
-    throwOnLatest?: boolean;
-    throwOnTar?: boolean;
-    tag?: string;
-  } = {}): { capturedTmpDir: () => string } {
+  function makeMockExec(
+    opts: {
+      throwOnLatest?: boolean;
+      throwOnTar?: boolean;
+      tag?: string;
+    } = {},
+  ): { capturedTmpDir: () => string } {
     const tag = opts.tag ?? "v0.5.0";
     let tmpDirCapture = "";
 
@@ -611,7 +670,10 @@ describe("embedInstall", () => {
       const cmdStr = typeof cmd === "string" ? cmd : String(cmd);
 
       if (cmdStr.includes("releases/latest")) {
-        if (opts.throwOnLatest) throw new Error("should not call releases/latest when tag is supplied");
+        if (opts.throwOnLatest)
+          throw new Error(
+            "should not call releases/latest when tag is supplied",
+          );
         return `${tag}\n`;
       }
 
@@ -644,12 +706,33 @@ describe("embedInstall", () => {
     expect(version).toBe("0.5.0");
 
     // Commands installed with plugin prefix
-    expect(fs.existsSync(path.join(tmpDir, ".claude", "commands", embedCommandName("scan.md")))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".claude", "commands", embedCommandName("create.md")))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".claude", "commands", embedCommandName("improve.md")))).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".claude", "commands", embedCommandName("scan.md")),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".claude", "commands", embedCommandName("create.md")),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(
+          tmpDir,
+          ".claude",
+          "commands",
+          embedCommandName("improve.md"),
+        ),
+      ),
+    ).toBe(true);
 
     // skills/skill-forge installed
-    expect(fs.existsSync(path.join(tmpDir, ".claude", "skills", "skill-forge", "SKILL.md"))).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".claude", "skills", "skill-forge", "SKILL.md"),
+      ),
+    ).toBe(true);
 
     // agents installed + path vars rewritten to relative form
     for (const file of EMBED_AGENTS) {
@@ -662,11 +745,25 @@ describe("embedInstall", () => {
 
     // hooks installed
     expect(
-      fs.existsSync(path.join(tmpDir, ".claude", "hooks", "skill-forge", "skill_forge_stop.py")),
+      fs.existsSync(
+        path.join(
+          tmpDir,
+          ".claude",
+          "hooks",
+          "skill-forge",
+          "skill_forge_stop.py",
+        ),
+      ),
     ).toBe(true);
 
     // version.json written
-    const versionPath = path.join(tmpDir, ".claude", "hooks", "skill-forge", "version.json");
+    const versionPath = path.join(
+      tmpDir,
+      ".claude",
+      "hooks",
+      "skill-forge",
+      "version.json",
+    );
     expect(fs.existsSync(versionPath)).toBe(true);
     const versionData = JSON.parse(fs.readFileSync(versionPath, "utf-8"));
     expect(versionData.version).toBe("0.5.0");
@@ -676,7 +773,9 @@ describe("embedInstall", () => {
     expect(fs.existsSync(settingsPath)).toBe(true);
     const settings = JSON.parse(fs.readFileSync(settingsPath, "utf-8"));
     const stopCmd = settings.hooks?.Stop?.[0]?.hooks?.[0]?.command ?? "";
-    expect(stopCmd).toContain("${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/");
+    expect(stopCmd).toContain(
+      "${CLAUDE_PROJECT_DIR}/.claude/hooks/skill-forge/",
+    );
     expect(stopCmd).not.toContain("${CLAUDE_PLUGIN_ROOT}");
 
     // SKILL.md inline script paths rewritten to relative form for embed mode
@@ -685,7 +784,9 @@ describe("embedInstall", () => {
       path.join(tmpDir, ".claude", "skills", "skill-forge", "SKILL.md"),
       "utf-8",
     );
-    expect(skillMd).toContain('python3 ".claude/skills/skill-forge/scripts/phase0_load.py"');
+    expect(skillMd).toContain(
+      'python3 ".claude/skills/skill-forge/scripts/phase0_load.py"',
+    );
     expect(skillMd).not.toContain("${CLAUDE_PLUGIN_ROOT}");
     expect(skillMd).not.toContain("${CLAUDE_PROJECT_DIR}");
 
@@ -705,20 +806,31 @@ describe("embedInstall", () => {
 
     expect(version).toBe("0.5.0");
     // Verify releases/latest was not called
-    const apiCalls = mockExecSync.mock.calls.filter(
-      ([c]) => String(c).includes("releases/latest"),
+    const apiCalls = mockExecSync.mock.calls.filter(([c]) =>
+      String(c).includes("releases/latest"),
     );
     expect(apiCalls).toHaveLength(0);
     // Files still installed correctly
-    expect(fs.existsSync(path.join(tmpDir, ".claude", "commands", embedCommandName("scan.md")))).toBe(true);
-    expect(fs.existsSync(path.join(tmpDir, ".claude", "hooks", "skill-forge", "version.json"))).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".claude", "commands", embedCommandName("scan.md")),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(tmpDir, ".claude", "hooks", "skill-forge", "version.json"),
+      ),
+    ).toBe(true);
   });
 
   it("handles corrupted existing settings.json gracefully", () => {
     // Pre-create a corrupted settings.json
     const settingsDir = path.join(tmpDir, ".claude");
     fs.mkdirSync(settingsDir, { recursive: true });
-    fs.writeFileSync(path.join(settingsDir, "settings.json"), "NOT VALID JSON{{{");
+    fs.writeFileSync(
+      path.join(settingsDir, "settings.json"),
+      "NOT VALID JSON{{{",
+    );
 
     makeMockExec();
 
@@ -727,7 +839,9 @@ describe("embedInstall", () => {
     expect(version).toBe("0.5.0");
 
     // settings.json should now be valid (fresh merge)
-    const settings = JSON.parse(fs.readFileSync(path.join(settingsDir, "settings.json"), "utf-8"));
+    const settings = JSON.parse(
+      fs.readFileSync(path.join(settingsDir, "settings.json"), "utf-8"),
+    );
     expect(settings.hooks).toBeDefined();
   });
 

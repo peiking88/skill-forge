@@ -36,9 +36,7 @@ describe("upgrade command", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     expect(() => run()).toThrow("process.exit");
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Failed"),
-    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed"));
 
     exitSpy.mockRestore();
     errorSpy.mockRestore();
