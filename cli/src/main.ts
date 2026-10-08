@@ -20,7 +20,7 @@ const VERSION: string = (require("../package.json") as { version: string })
 
 // Synced by bump-version.sh when plugin version changes.
 // Cannot read .claude-plugin/plugin.json at runtime — it's outside the npm package.
-export const PLUGIN_VERSION = "0.10.0";
+export const PLUGIN_VERSION = "0.10.1";
 
 const KNOWN_COMMANDS = new Set([
   "install",
