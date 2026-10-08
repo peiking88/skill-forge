@@ -382,10 +382,12 @@ Invocation:
 ```
 Agent tool, subagent_type="skill-grader"
 prompt: "Grade draft at <absolute path>. Mode: create|improve.
-         Write verdict to <output path> and echo to stdout."
+         Echo the verdict JSON to stdout."
 ```
 
-Parse the returned JSON: `total` (int 0–8) is the decision key,
+Persist the returned JSON to <output path> yourself (the subagent's tools
+are Read/Glob/Grep — stdout is its only output channel), then parse:
+`total` (int 0–8) is the decision key,
 `threshold_pass` (bool) is true iff `total ≥ 6`. Rubric, scoring dimensions,
 and the full schema live in `agents/skill-grader.md` — single source, don't
 duplicate here.

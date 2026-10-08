@@ -20,7 +20,7 @@ Your prompt includes:
 
 - **skill_path**: absolute path to the skill directory, or directly to SKILL.md / draft.md
 - **mode**: `create` (new skill) or `improve` (existing skill being iterated) — affects which suggestions are actionable
-- **output_path**: where to write your verdict JSON (also echo to stdout)
+- **output_path**: where the MAIN agent will persist your verdict JSON — you have no Write tool, so stdout is your only output channel
 
 ## Process
 
@@ -68,9 +68,9 @@ List up to 3 suggestions. For each:
 
 Keep the bar high. A suggestion worth raising is one the author would say "good catch" about. Do not pad the list.
 
-### Step 5: Write the verdict
+### Step 5: Emit the verdict
 
-Save JSON to `output_path` AND print the same JSON to stdout for direct consumption. Schema:
+Print the complete JSON to stdout (the main agent persists it to `output_path` — you have no Write tool, stdout is your only channel). Schema:
 
 ```json
 {
