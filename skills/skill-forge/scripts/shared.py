@@ -14,6 +14,7 @@ import sys
 import threading
 import time
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 
 # ── path constants ───────────────────────────────────────
@@ -34,19 +35,44 @@ WORKSPACE_DIR_NAME = ".skill-forge"
 _WORKSPACE_ROOT_ENV = "SKILL_FORGE_WORKSPACE_ROOT"
 
 
+@lru_cache(maxsize=1)
+def _cwd_project_root() -> Path:
+    """Git toplevel for cwd; cwd itself outside a repo.
+
+    Hooks call state_file()/workspace_dir() with no argument, so the
+    workspace used to land wherever the shell happened to cd — drifting
+    into project subdirs (observed: `.skill-forge/` created inside
+    `skills/<name>/references/`). Anchoring on git toplevel pins it to
+    the project root regardless of cwd.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        )
+        root = result.stdout.strip()
+        return Path(root) if root else Path.cwd()
+    except (OSError, subprocess.SubprocessError):
+        return Path.cwd()
+
+
 def workspace_dir(project_dir: Path | None = None) -> Path:
     """Per-project workspace dir at `<project_dir>/.skill-forge/`.
 
     Env override `SKILL_FORGE_WORKSPACE_ROOT` wins — tests point it at
     tmp_path to keep draft/insights/state out of the real project tree.
     When set, the override is THE workspace dir (not a root above it).
-    None `project_dir` falls back to cwd.
+    None `project_dir` resolves the git toplevel for cwd (falls back to
+    cwd outside a repo) so the workspace never drifts with shell cwd.
     """
     override = os.environ.get(_WORKSPACE_ROOT_ENV)
     if override:
         return Path(override)
     if project_dir is None:
-        project_dir = Path.cwd()
+        project_dir = _cwd_project_root()
     return Path(project_dir) / WORKSPACE_DIR_NAME
 
 
